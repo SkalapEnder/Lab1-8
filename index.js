@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require('uuid');
 
@@ -6,6 +7,8 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
 mongoose.connect('mongodb+srv://skalap2endra:kGOM7z5V54vBFdp1@cluster0.vannl.mongodb.net/books?retryWrites=true&w=majority&appName=Cluster0')
@@ -32,25 +35,26 @@ app.get('/' , (req, res) => {res.render('index')});
 
 // Routes
 // ################################
-app.get('/books', (req, res) => res.json(books));
+app.get('/books', (req, res) => res.send(books));
 
 app.get('/books/:id', (req, res) => {
     const { id } = req.params;
     const book = books.find(b => b.id === id);
-    if (!book) {
+    if (book === undefined || book === null) {
         return res.status(404).json({ message: 'Book not found' });
     }
     res.json(book);
 });
 
-app.post('/books', (req, res) => {
+app.post('/books', async (req, res) => {
     const { title, author, genre, year } = req.body;
 
     if (!title || !author || !genre || !year) {
         return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
     }
+    const newID = await getFreeBookId();
 
-    const newBook = { id: uuidv4(), title, author, genre, year };
+    const newBook = { book_id: newID, title: title, author: author, genre: genre, year: year };
     books.push(newBook);
     res.status(201).json(newBook);
 });
@@ -111,13 +115,17 @@ app.get('/books-mng/:id', async (req, res) => {
 app.post('/books-mng', async (req, res) => {
     const { title, author, genre, year } = req.body;
 
-    if (!title || !author || !genre || !year) {
-        return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
+    if (title === undefined ||
+        author === undefined ||
+        genre === undefined ||
+        year === undefined) {
+        return res.status(400).json({ message: 'All fields (title, author, genre, year) are required '});
     }
 
     try {
+        const newID = await getNextFreeBookId();
         const newBook = new Book({
-            book_id: await getNextFreeBookId(),
+            book_id: newID,
             title: title,
             author: author,
             genre: genre,
@@ -174,12 +182,20 @@ app.listen(PORT, () => {
 async function getNextFreeBookId() {
     try {
         const lastBook = await Book.find({}).sort({ book_id: -1 });
-        if (lastBook === null) {
+        console.log(lastBook);
+        if (lastBook === null || lastBook.length === 0) {
             return 0;
         }
-        return parseInt(lastBook.book_id + 1);
+        return lastBook[0]['book_id'] + 1;
     } catch (err) {
         console.error('Error retrieving next free user_id:', err.message);
         throw new Error('Failed to retrieve next free user ID');
     }
+}
+
+async function getFreeBookId() {
+    if (books.length === 0) {
+        return 0;
+    }
+    return books[books.length - 1]["book_id"] + 1;
 }
