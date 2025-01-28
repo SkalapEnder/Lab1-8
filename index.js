@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = 3000;
@@ -65,9 +64,10 @@ app.post('/books', async (req, res) => {
 });
 
 app.put('/books/:id', (req, res) => {
-    const { id } = req.params;
+    const id = req.params.id;
+    const book_id = Number(id);
     const { title, author, genre, year } = req.body;
-    const bookIndex = books.findIndex(b => b.id === id);
+    const bookIndex = books.findIndex(b => b.book_id === book_id);
 
     if (bookIndex === -1) {
         return res.status(404).json({ message: 'Book not found' });
@@ -77,13 +77,13 @@ app.put('/books/:id', (req, res) => {
         return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
     }
 
-    books[bookIndex] = { id, title, author, genre, year };
+    books[bookIndex] = { book_id: book_id, title: title, author: author, genre: genre, year: year };
     res.json(books[bookIndex]);
 });
 
 app.delete('/books/:id', (req, res) => {
     const id = req.params.id;
-    const bookIndex = books.findIndex(b => b.book_id === id);
+    const bookIndex = books.findIndex(b => b.book_id === Number(id));
 
     if (bookIndex === -1) {
         return res.status(404).json({ message: 'Book not found' });
@@ -187,7 +187,6 @@ app.listen(PORT, () => {
 async function getNextFreeBookId() {
     try {
         const lastBook = await Book.find({}).sort({ book_id: -1 });
-        console.log(lastBook);
         if (lastBook === null || lastBook.length === 0) {
             return 0;
         }
@@ -196,8 +195,4 @@ async function getNextFreeBookId() {
         console.error('Error retrieving next free user_id:', err.message);
         throw new Error('Failed to retrieve next free user ID');
     }
-}
-
-async function getFreeBookId() {
-
 }
