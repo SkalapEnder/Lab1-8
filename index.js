@@ -5,8 +5,11 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.set('view engine', 'ejs');
 
 let books = [];
+
+app.get('/' , (req, res) => {res.render('index')});
 
 // Routes
 app.get('/books', (req, res) => res.json(books));
