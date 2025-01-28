@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require("mongoose");
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -7,11 +8,30 @@ const PORT = 3000;
 app.use(express.json());
 app.set('view engine', 'ejs');
 
+mongoose.connect('mongodb+srv://skalap2endra:kGOM7z5V54vBFdp1@cluster0.vannl.mongodb.net/books?retryWrites=true&w=majority&appName=Cluster0')
+    .then(() => console.log("Index: Connected to MongoDB Atlas"))
+    .catch(err => console.log("Error during connect to MongoDB: ", err));
+
 let books = [];
 
+// Define Mongoose Schema and Model for Books
+// ################################
+const bookSchema = new mongoose.Schema({
+    book_id: {type: Number, required: true, unique: true},
+    title: { type: String, required: true },
+    author: { type: String, required: true },
+    genre: { type: String, required: true },
+    year: { type: Number, required: true }
+});
+
+const Book = mongoose.model('book', bookSchema);
+
+// Enter point
+// ################################
 app.get('/' , (req, res) => {res.render('index')});
 
 // Routes
+// ################################
 app.get('/books', (req, res) => res.json(books));
 
 app.get('/books/:id', (req, res) => {
@@ -64,6 +84,102 @@ app.delete('/books/:id', (req, res) => {
     res.json(deletedBook[0]);
 });
 
+// ################################
+// MongoDB Atlas part
+app.get('/books-mng', async (req, res) => {
+    try {
+        const books = await Book.find({});
+        res.json(books);
+    } catch (err) {
+        res.status(500).json({ message: 'Error retrieving books', error: err });
+    }
+});
+
+app.get('/books-mng/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const book = await Book.findOne({book_id: id});
+        if (!book) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+        res.json(book);
+    } catch (err) {
+        res.status(500).json({ message: 'Error retrieving book', error: err });
+    }
+});
+
+app.post('/books-mng', async (req, res) => {
+    const { title, author, genre, year } = req.body;
+
+    if (!title || !author || !genre || !year) {
+        return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
+    }
+
+    try {
+        const newBook = new Book({
+            book_id: await getNextFreeBookId(),
+            title: title,
+            author: author,
+            genre: genre,
+            year: year
+        });
+        await newBook.save();
+        res.status(201).json(newBook);
+    } catch (err) {
+        res.status(500).json({ message: 'Error creating book', error: err });
+    }
+});
+
+app.put('/books-mng/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, author, genre, year } = req.body;
+
+    if (!title || !author || !genre || !year) {
+        return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
+    }
+
+    try {
+        const updatedBook = await Book.findOneAndUpdate(
+            { book_id: id },
+            { title: title, author: author, genre: genre, year: year },
+            { new: true }
+        );
+        if (updatedBook=== null) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+        res.json(updatedBook);
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating book', error: err });
+    }
+});
+
+app.delete('/books-mng/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedBook = await Book.findOneAndDelete({book_id: id});
+        if (deletedBook === null) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+        res.json(deletedBook);
+    } catch (err) {
+        res.status(500).json({ message: 'Error deleting book', error: err });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+
+async function getNextFreeBookId() {
+    try {
+        const lastBook = await Book.find({}).sort({ book_id: -1 });
+        if (lastBook === null) {
+            return 0;
+        }
+        return parseInt(lastBook.book_id + 1);
+    } catch (err) {
+        console.error('Error retrieving next free user_id:', err.message);
+        throw new Error('Failed to retrieve next free user ID');
+    }
+}
