@@ -14,19 +14,35 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fs-3">
-    <div class="collapse navbar-collapse justify-content-around" id="navbarsExampleDefault">
+    <div class="collapse navbar-collapse justify-content-around">
         <a class="navbar-brand fs-3 p-2 fw-bold" href="/">Lab Work 1 - Week 8</a>
     </div>
 </nav>
 
-<main class="container-fluid text-center mt-4 p-5 w-50 shadow bg-white rounded">
+<main class="container-fluid text-center mt-4 p-4 w-50 shadow bg-white rounded">
     <h1>Welcome to My Books API!</h1>
-    <p class="fs-4">Welcome to my Book API. You can access to my local REST API via Postman.</p>
-    <p class="fs-4"><strong>GET /books</strong> - Retrieve all books</p>
-    <p class="fs-4"><strong>GET /books/:id</strong> - Return books with specific ID</p>
-    <p class="fs-4"><strong>POST /books</strong> - Create New Book with body</p>
-    <p class="fs-4"><strong>PUT /books/:id</strong> - Update current book with new data in body</p>
-    <p class="fs-4"><strong>DELETE /books/:id</strong> - Delete book by ID</p>
+    <p class="fs-4">Welcome to my Book API. You can access to my REST API via Postman.</p>
+</main>
+
+<main class="container-fluid text-center my-4 p-4 w-75 shadow bg-white rounded d-flex justify-content-around">
+    <div class="mx-2">
+        <h1 class="text-center">With in-memory array</h1>
+        <p class="fs-4"><strong>GET /books</strong> - Retrieve all books</p>
+        <p class="fs-4"><strong>GET /books/:id</strong> - Return books with specific ID</p>
+        <p class="fs-4"><strong>POST /books</strong> - Create New Book with body</p>
+        <p class="fs-4"><strong>PUT /books/:id</strong> - Update current book with new data in body</p>
+        <p class="fs-4"><strong>DELETE /books/:id</strong> - Delete book by ID</p>
+        <p class="fs-5">P.S.: After each update of Node.JS or my Render Website, the data in array will be destroyed</p>
+    </div>
+
+    <div class="mx-2">
+        <h1 class="text-center">With MongoDB Atlas</h1>
+        <p class="fs-4"><strong>GET /books-mng</strong> - Retrieve all books</p>
+        <p class="fs-4"><strong>GET /books-mng/:id</strong> - Return books with specific ID</p>
+        <p class="fs-4"><strong>POST /books-mng</strong> - Create New Book with body</p>
+        <p class="fs-4"><strong>PUT /books-mng/:id</strong> - Update current book with new data in body</p>
+        <p class="fs-4"><strong>DELETE /books-mng/:id</strong> - Delete book by ID</p>
+    </div>
 </main>
 
 <div class="py-2 text-center fs-5 fixed-bottom text-white bg-dark">

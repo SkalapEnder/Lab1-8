@@ -38,8 +38,8 @@ app.get('/' , (req, res) => {res.render('index')});
 app.get('/books', (req, res) => res.send(books));
 
 app.get('/books/:id', (req, res) => {
-    const { id } = req.params;
-    const book = books.find(b => b.id === id);
+    const id = req.params.id;
+    const book = books.find(b => b.book_id === Number(id));
     if (book === undefined || book === null) {
         return res.status(404).json({ message: 'Book not found' });
     }
@@ -52,7 +52,12 @@ app.post('/books', async (req, res) => {
     if (!title || !author || !genre || !year) {
         return res.status(400).json({ message: 'All fields (title, author, genre, year) are required' });
     }
-    const newID = await getFreeBookId();
+
+    let newID = 0;
+
+    if (books.length !== 0) {
+        newID = books[books.length - 1]["book_id"] + 1;
+    }
 
     const newBook = { book_id: newID, title: title, author: author, genre: genre, year: year };
     books.push(newBook);
@@ -77,8 +82,8 @@ app.put('/books/:id', (req, res) => {
 });
 
 app.delete('/books/:id', (req, res) => {
-    const { id } = req.params;
-    const bookIndex = books.findIndex(b => b.id === id);
+    const id = req.params.id;
+    const bookIndex = books.findIndex(b => b.book_id === id);
 
     if (bookIndex === -1) {
         return res.status(404).json({ message: 'Book not found' });
@@ -194,8 +199,5 @@ async function getNextFreeBookId() {
 }
 
 async function getFreeBookId() {
-    if (books.length === 0) {
-        return 0;
-    }
-    return books[books.length - 1]["book_id"] + 1;
+
 }
