@@ -167,9 +167,9 @@ app.put('/books-mng/:id', async (req, res) => {
 });
 
 app.delete('/books-mng/:id', async (req, res) => {
-    const { id } = req.params;
+    const id = req.params.id;
     try {
-        const deletedBook = await Book.findOneAndDelete({book_id: id});
+        const deletedBook = await Book.findOneAndDelete({book_id: Number(id)});
         if (deletedBook === null) {
             return res.status(404).json({ message: 'Book not found' });
         }
