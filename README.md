@@ -3,6 +3,8 @@
 
 GitHub repository of laboratory work 1, Week 8, WEB Backend.
 
+Link to deployed website: https://lab1-8.onrender.com
+
 #### PLEASE, READ BerikAlisher_Lab1-8.pdf !!! THERE WILL BE SCREENSHOTS OF EACH ROUTE
 
 
